@@ -339,7 +339,7 @@ class With(Stmt):
 class Block(Stmt):
     """A node that represents a block."""
 
-    fields = ("name", "body", "scoped")
+    fields = ("name", "body", "scoped", "required")
 
 
 class Include(Stmt):

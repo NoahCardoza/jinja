@@ -255,6 +255,11 @@ class Parser:
         node = nodes.Block(lineno=next(self.stream).lineno)
         node.name = self.stream.expect("name").value
         node.scoped = self.stream.skip_if("name:scoped")
+        node.required = self.stream.skip_if("name:required")
+
+        # set the values once more to account for opposite ordering
+        node.scoped = self.stream.skip_if("name:scoped") if not node.scoped else node.scoped
+        node.required = self.stream.skip_if("name:required") if not node.required else node.required
 
         # common problem people encounter when switching from django
         # to jinja.  we do not support hyphens in block names, so let's
@@ -924,7 +929,6 @@ class Parser:
         finally:
             if end_tokens is not None:
                 self._end_token_stack.pop()
-
         return body
 
     def parse(self):
