@@ -271,6 +271,16 @@ class Parser:
             )
 
         node.body = self.parse_statements(("name:endblock",), drop_needle=True)
+        
+        # enforce that required blocks only contain whitespace or comments
+        try:
+            if node.required:
+                assert all(child.data.isspace() for body in node.body for child in body.nodes)
+        except:
+            self.fail(
+                "Required blocks can only contain comments or whitespace."
+            )
+            
         self.stream.skip_if("name:" + node.name)
         return node
 
