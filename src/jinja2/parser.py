@@ -258,8 +258,13 @@ class Parser:
         node.scoped = False
         node.required = False
         while self.stream.current.type == "name":
-            setattr(node, self.stream.current.value, True)
-            next(self.stream)
+            if self.stream.current.test_any("name:scoped", "name:required"):
+                setattr(node, self.stream.current.value, True)
+                next(self.stream)
+            else:
+                self.fail(
+                    f"invalid syntax for block statement", self.stream.current.lineno
+                )
 
         # common problem people encounter when switching from django
         # to jinja.  we do not support hyphens in block names, so let's
