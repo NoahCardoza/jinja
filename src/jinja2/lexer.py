@@ -352,8 +352,23 @@ class TokenStream:
             return next(self)
 
     def skip_if(self, expr):
-        """Like :meth:`next_if` but only returns `True` or `False`."""
+        """Like :meth:`next_if` but only retuprns `True` or `False`."""
         return self.next_if(expr) is not None
+
+    def look_and_skip_if(self, expr):
+        """Like :meth: `skip_if` but looks at next token as well if
+        the current token is not matched.  Unlike `look`, next token
+        will not be reinserted in the stream if matched.
+        """
+        if self.skip_if(expr):
+            return True
+        old_token = next(self)
+        next_token = self.current
+        self.current = old_token
+        is_match = next_token.test(expr)
+        if not is_match:
+            self.push(next_token)
+        return is_match
 
     def __next__(self):
         """Go one token ahead and return the old one.
