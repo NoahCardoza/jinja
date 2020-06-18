@@ -456,11 +456,19 @@ class LoopControlExtension(Extension):
 
 
 class WithExtension(Extension):
-    pass
+    def __init__(self, environment):
+        self.environment = environment
+        print("This extension is deprecated and will be removed in version 3.1")
+
+    # pass
 
 
 class AutoEscapeExtension(Extension):
-    pass
+    def __init__(self, environment):
+        self.environment = environment
+        print("This extension is deprecated and will be removed in version 3.1")
+
+    # pass
 
 
 class DebugExtension(Extension):
