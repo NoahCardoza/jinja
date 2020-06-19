@@ -340,7 +340,7 @@ class Block(Stmt):
     """A node that represents a block.
 
     .. versionchanged:: 3.0.0
-       the `required` field was added.
+        the `required` field was added.
     """
 
     fields = ("name", "body", "scoped", "required")
