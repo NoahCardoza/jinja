@@ -352,7 +352,7 @@ class TokenStream:
             return next(self)
 
     def skip_if(self, expr):
-        """Like :meth:`next_if` but only retuprns `True` or `False`."""
+        """Like :meth:`next_if` but only returns `True` or `False`."""
         return self.next_if(expr) is not None
 
     def look_and_skip_if(self, expr):
