@@ -1,6 +1,7 @@
 """Extension API for adding custom tags and behavior."""
 import pprint
 import re
+import warnings
 from sys import version_info
 
 from markupsafe import Markup
@@ -455,7 +456,7 @@ class LoopControlExtension(Extension):
         return nodes.Continue(lineno=token.lineno)
 
 
-class WithExtension(Extension):
+class WithExtension:
     def __init__(self, environment):
         self.environment = environment
         print("This extension is deprecated and will be removed in version 3.1")
@@ -465,8 +466,12 @@ class WithExtension(Extension):
 
 class AutoEscapeExtension(Extension):
     def __init__(self, environment):
-        self.environment = environment
-        print("This extension is deprecated and will be removed in version 3.1")
+        Extension.__init__(self, environment)
+        warnings.warn(
+            "This extension is deprecated and will be removed in version 3.1",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     # pass
 
