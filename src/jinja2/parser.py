@@ -271,13 +271,12 @@ class Parser:
         # enforce that required blocks only contain whitespace or comments
         # by asserting that the body, if not empty, is just TemplateData nodes
         # with whitespace data
-        if node.required:
-            try:
-                assert all(
-                    child.data.isspace() for body in node.body for child in body.nodes
-                )
-            except (AssertionError, AttributeError):
-                self.fail("Required blocks can only contain comments or whitespace")
+        if node.required and not all(
+            isinstance(child, nodes.TemplateData) and child.data.isspace()
+            for body in node.body
+            for child in body.nodes
+        ):
+            self.fail("Required blocks can only contain comments or whitespace")
 
         self.stream.skip_if("name:" + node.name)
         return node
