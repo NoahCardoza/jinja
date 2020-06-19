@@ -456,10 +456,14 @@ class LoopControlExtension(Extension):
         return nodes.Continue(lineno=token.lineno)
 
 
-class WithExtension:
+class WithExtension(Extension):
     def __init__(self, environment):
-        self.environment = environment
-        print("This extension is deprecated and will be removed in version 3.1")
+        Extension.__init__(self, environment)
+        warnings.warn(
+            "WithExtension is deprecated and will be removed in version 3.1",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
     # pass
 
