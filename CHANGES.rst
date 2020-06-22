@@ -11,8 +11,11 @@ Unreleased
 -   Remove code that was marked deprecated.
 -   Use :pep:`451` API to load templates with
     :class:`~loaders.PackageLoader`. :issue:`1168`
+-   Fix a bug that caused imported macros to not have access to the
+    current template's globals. :issue:`688`
 -   Add ``required`` attribute to blocks that must be overridden at some
     point, but not necessarily by the direct child :issue:`1147`
+
 
 Version 2.11.2
 --------------
