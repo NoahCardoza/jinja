@@ -13,6 +13,7 @@ Unreleased
     :class:`~loaders.PackageLoader`. :issue:`1168`
 -   Fix a bug that caused imported macros to not have access to the
     current template's globals. :issue:`688`
+-   Add ability to ignore ``trim_blocks`` using ``+%}``. :issue:`1036`
 -   Add ``required`` attribute to blocks that must be overridden at some
     point, but not necessarily by the direct child :issue:`1147`
 
