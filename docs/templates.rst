@@ -566,6 +566,13 @@ Rendering ``child.tmpl`` will give
 Rendering ``grandchild.tmpl`` will give
 ``Hi from grandchild.``
 
+When combined with ``scoped``, the ``required`` modifier must be placed `after`
+the scoped modifier.  Here are some valid examples::
+
+    {% block body scoped %}{% endblock %}
+    {% block body required %}{% endblock %}
+    {% block body scoped required %}{% endblock %}
+
 
 Template Objects
 ~~~~~~~~~~~~~~~~
