@@ -355,12 +355,13 @@ class TestBug:
         assert t.render().strip() == "45|6"
 
     def test_macro_escaping(self):
-        env = Environment(
-            autoescape=lambda x: False, extensions=["jinja2.ext.autoescape"]
-        )
-        template = "{% macro m() %}<html>{% endmacro %}"
-        template += "{% autoescape true %}{{ m() }}{% endautoescape %}"
-        assert env.from_string(template).render()
+        with pytest.deprecated_call():
+            env = Environment(
+                autoescape=lambda x: False, extensions=["jinja2.ext.autoescape"]
+            )
+            template = "{% macro m() %}<html>{% endmacro %}"
+            template += "{% autoescape true %}{{ m() }}{% endautoescape %}"
+            assert env.from_string(template).render()
 
     def test_macro_scoping(self, env):
         tmpl = env.from_string(
