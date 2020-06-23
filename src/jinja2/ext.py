@@ -470,7 +470,6 @@ class WithExtension(Extension):
 
 class AutoEscapeExtension(Extension):
     def __init__(self, environment):
-        Extension.__init__(self, environment)
         warnings.warn(
             "This extension is deprecated and will be removed in version 3.1",
             DeprecationWarning,
