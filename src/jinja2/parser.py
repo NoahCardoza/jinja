@@ -254,8 +254,8 @@ class Parser:
     def parse_block(self):
         node = nodes.Block(lineno=next(self.stream).lineno)
         node.name = self.stream.expect("name").value
-        node.scoped = self.stream.look_and_skip_if("name:scoped")
-        node.required = self.stream.look_and_skip_if("name:required")
+        node.scoped = self.stream.skip_if("name:scoped")
+        node.required = self.stream.skip_if("name:required")
 
         # common problem people encounter when switching from django
         # to jinja.  we do not support hyphens in block names, so let's
