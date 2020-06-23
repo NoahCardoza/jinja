@@ -11,6 +11,7 @@ Unreleased
 -   Remove code that was marked deprecated.
 -   Use :pep:`451` API to load templates with
     :class:`~loaders.PackageLoader`. :issue:`1168`
+-   Display deprecated warning for autoescapeExtension and withExtension
 
 
 Version 2.11.2
