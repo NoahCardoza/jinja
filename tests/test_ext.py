@@ -527,37 +527,38 @@ class TestNewstyleInternationalization:
 
 class TestAutoEscape:
     def test_scoped_setting(self):
-        env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
-        tmpl = env.from_string(
-            """
-            {{ "<HelloWorld>" }}
-            {% autoescape false %}
+        with pytest.deprecated_call():
+            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
+            tmpl = env.from_string(
+                """
                 {{ "<HelloWorld>" }}
-            {% endautoescape %}
-            {{ "<HelloWorld>" }}
-        """
-        )
-        assert tmpl.render().split() == [
-            "&lt;HelloWorld&gt;",
-            "<HelloWorld>",
-            "&lt;HelloWorld&gt;",
-        ]
+                {% autoescape false %}
+                    {{ "<HelloWorld>" }}
+                {% endautoescape %}
+                {{ "<HelloWorld>" }}
+            """
+            )
+            assert tmpl.render().split() == [
+                "&lt;HelloWorld&gt;",
+                "<HelloWorld>",
+                "&lt;HelloWorld&gt;",
+            ]
 
-        env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=False)
-        tmpl = env.from_string(
-            """
-            {{ "<HelloWorld>" }}
-            {% autoescape true %}
+            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=False)
+            tmpl = env.from_string(
+                """
                 {{ "<HelloWorld>" }}
-            {% endautoescape %}
-            {{ "<HelloWorld>" }}
-        """
-        )
-        assert tmpl.render().split() == [
-            "<HelloWorld>",
-            "&lt;HelloWorld&gt;",
-            "<HelloWorld>",
-        ]
+                {% autoescape true %}
+                    {{ "<HelloWorld>" }}
+                {% endautoescape %}
+                {{ "<HelloWorld>" }}
+            """
+            )
+            assert tmpl.render().split() == [
+                "<HelloWorld>",
+                "&lt;HelloWorld&gt;",
+                "<HelloWorld>",
+            ]
 
     def test_nonvolatile(self):
         env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
