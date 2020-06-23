@@ -323,9 +323,37 @@ class TestInheritance:
         t1 = env.get_template("child1")
         t2 = env.get_template("child2")
 
-        # Order in which scoped and required are defined should not matter
         assert t1.render(seq=list(range(3))) == "[0][1][2]"
-        assert t2.render(seq=list(range(3))) == "[0][1][2]"
+
+        # scoped must come before required
+        with pytest.raises(TemplateSyntaxError):
+            t2.render(seq=list(range(3)))
+
+    def test_duplicate_required_scoped(self, env):
+        env = Environment(
+            loader=DictLoader(
+                {
+                    "master1": "{% for item in seq %}[{% block item "
+                    "scoped scoped %}{% endblock %}]{% endfor %}",
+                    "master2": "{% for item in seq %}[{% block item "
+                    "required required %}{% endblock %}]{% endfor %}",
+                    "master3": "{% for item in seq %}[{% block item "
+                    "scoped required required %}{% endblock %}]{% endfor %}",
+                    "master4": "{% for item in seq %}[{% block item "
+                    "scoped scoped required %}{% endblock %}]{% endfor %}",
+                    "child": "{% if master %}{% extends master %}"
+                    "{% else %}{% extends 'master1' %}{% endif %}"
+                    "{%- block x %}CHILD{% endblock %}",
+                }
+            )
+        )
+
+        tmpl = env.get_template("child")
+        with pytest.raises(TemplateSyntaxError):
+            tmpl.render(master="master1", seq=list(range(3)))
+            tmpl.render(master="master2", seq=list(range(3)))
+            tmpl.render(master="master3", seq=list(range(3)))
+            tmpl.render(master="master4", seq=list(range(3)))
 
 
 class TestBugFix:
