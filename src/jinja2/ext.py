@@ -458,25 +458,23 @@ class LoopControlExtension(Extension):
 
 class WithExtension(Extension):
     def __init__(self, environment):
-        Extension.__init__(self, environment)
+        super().__init__(environment)
         warnings.warn(
-            "WithExtension is deprecated and will be removed in version 3.1",
+            "The 'with' extension is deprecated and will be removed in version 3.1. This is built in now.",
             DeprecationWarning,
             stacklevel=2,
         )
-
+        
 
 class AutoEscapeExtension(Extension):
     def __init__(self, environment):
-        Extension.__init__(self, environment)
+        super.__init__(environment)
         warnings.warn(
-            "This extension is deprecated and will be removed in version 3.1",
+            "The 'autoescape' extension is deprecated and will be removed in version 3.1. This is built in now.",
             DeprecationWarning,
             stacklevel=2,
         )
-
-    # pass
-
+        
 
 class DebugExtension(Extension):
     """A ``{% debug %}`` tag that dumps the available variables,
