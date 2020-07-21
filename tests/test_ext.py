@@ -481,13 +481,12 @@ class TestNewstyleInternationalization:
         assert t.render(ae=False) == "<strong>Wert: <test></strong>"
 
     def test_autoescape_macros(self):
-        with pytest.deprecated_call():
-            env = Environment(autoescape=False, extensions=["jinja2.ext.autoescape"])
-            template = (
-                "{% macro m() %}<html>{% endmacro %}"
-                "{% autoescape true %}{{ m() }}{% endautoescape %}"
-            )
-            assert env.from_string(template).render() == "<html>"
+        env = Environment(autoescape=False)
+        template = (
+            "{% macro m() %}<html>{% endmacro %}"
+            "{% autoescape true %}{{ m() }}{% endautoescape %}"
+        )
+        assert env.from_string(template).render() == "<html>"
 
     def test_num_used_twice(self):
         tmpl = newstyle_i18n_env.get_template("ngettext_long.html")
@@ -529,49 +528,47 @@ class TestNewstyleInternationalization:
 
 class TestAutoEscape:
     def test_scoped_setting(self):
-        with pytest.deprecated_call():
-            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
-            tmpl = env.from_string(
-                """
-                {{ "<HelloWorld>" }}
-                {% autoescape false %}
-                    {{ "<HelloWorld>" }}
-                {% endautoescape %}
-                {{ "<HelloWorld>" }}
+        env = Environment(autoescape=True)
+        tmpl = env.from_string(
             """
-            )
-            assert tmpl.render().split() == [
-                "&lt;HelloWorld&gt;",
-                "<HelloWorld>",
-                "&lt;HelloWorld&gt;",
-            ]
+            {{ "<HelloWorld>" }}
+            {% autoescape false %}
+                {{ "<HelloWorld>" }}
+            {% endautoescape %}
+            {{ "<HelloWorld>" }}
+        """
+        )
+        assert tmpl.render().split() == [
+            "&lt;HelloWorld&gt;",
+            "<HelloWorld>",
+            "&lt;HelloWorld&gt;",
+        ]
 
-            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=False)
-            tmpl = env.from_string(
-                """
-                {{ "<HelloWorld>" }}
-                {% autoescape true %}
-                    {{ "<HelloWorld>" }}
-                {% endautoescape %}
-                {{ "<HelloWorld>" }}
+        env = Environment( autoescape=False)
+        tmpl = env.from_string(
             """
-            )
-            assert tmpl.render().split() == [
-                "<HelloWorld>",
-                "&lt;HelloWorld&gt;",
-                "<HelloWorld>",
-            ]
+            {{ "<HelloWorld>" }}
+            {% autoescape true %}
+                {{ "<HelloWorld>" }}
+            {% endautoescape %}
+            {{ "<HelloWorld>" }}
+        """
+        )
+        assert tmpl.render().split() == [
+            "<HelloWorld>",
+            "&lt;HelloWorld&gt;",
+            "<HelloWorld>",
+        ]
 
     def test_nonvolatile(self):
-        with pytest.deprecated_call():
-            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
-            tmpl = env.from_string('{{ {"foo": "<test>"}|xmlattr|escape }}')
-            assert tmpl.render() == ' foo="&lt;test&gt;"'
-            tmpl = env.from_string(
-                '{% autoescape false %}{{ {"foo": "<test>"}'
-                "|xmlattr|escape }}{% endautoescape %}"
-            )
-            assert tmpl.render() == " foo=&#34;&amp;lt;test&amp;gt;&#34;"
+        env = Environment(autoescape=True)
+        tmpl = env.from_string('{{ {"foo": "<test>"}|xmlattr|escape }}')
+        assert tmpl.render() == ' foo="&lt;test&gt;"'
+        tmpl = env.from_string(
+            '{% autoescape false %}{{ {"foo": "<test>"}'
+            "|xmlattr|escape }}{% endautoescape %}"
+        )
+        assert tmpl.render() == " foo=&#34;&amp;lt;test&amp;gt;&#34;"
 
     def test_volatile(self):
         env = Environment(autoescape=True)
@@ -591,30 +588,29 @@ class TestAutoEscape:
         assert tmpl.render(x=1) == "&lt;x&gt;1<y>"
 
     def test_volatile_scoping(self):
-        with pytest.deprecated_call():
-            env = Environment(extensions=["jinja2.ext.autoescape"])
-            tmplsource = """
-            {% autoescape val %}
-                {% macro foo(x) %}
-                    [{{ x }}]
-                {% endmacro %}
-                {{ foo().__class__.__name__ }}
-            {% endautoescape %}
-            {{ '<testing>' }}
-            """
-            tmpl = env.from_string(tmplsource)
-            assert tmpl.render(val=True).split()[0] == "Markup"
-            assert tmpl.render(val=False).split()[0] == "str"
+        env = Environment()
+        tmplsource = """
+        {% autoescape val %}
+            {% macro foo(x) %}
+                [{{ x }}]
+            {% endmacro %}
+            {{ foo().__class__.__name__ }}
+        {% endautoescape %}
+        {{ '<testing>' }}
+        """
+        tmpl = env.from_string(tmplsource)
+        assert tmpl.render(val=True).split()[0] == "Markup"
+        assert tmpl.render(val=False).split()[0] == "str"
 
-            # looking at the source we should see <testing> there in raw
-            # (and then escaped as well)
-            env = Environment(extensions=["jinja2.ext.autoescape"])
-            pysource = env.compile(tmplsource, raw=True)
-            assert "<testing>\\n" in pysource
+        # looking at the source we should see <testing> there in raw
+        # (and then escaped as well)
+        env = Environment()
+        pysource = env.compile(tmplsource, raw=True)
+        assert "<testing>\\n" in pysource
 
-            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
-            pysource = env.compile(tmplsource, raw=True)
-            assert "&lt;testing&gt;\\n" in pysource
+        env = Environment( autoescape=True)
+        pysource = env.compile(tmplsource, raw=True)
+        assert "&lt;testing&gt;\\n" in pysource
 
     def test_overlay_scopes(self):
         class MagicScopeExtension(Extension):
