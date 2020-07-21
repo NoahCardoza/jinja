@@ -574,14 +574,13 @@ class TestAutoEscape:
             assert tmpl.render() == " foo=&#34;&amp;lt;test&amp;gt;&#34;"
 
     def test_volatile(self):
-        with pytest.deprecated_call():
-            env = Environment(extensions=["jinja2.ext.autoescape"], autoescape=True)
-            tmpl = env.from_string(
-                '{% autoescape foo %}{{ {"foo": "<test>"}'
-                "|xmlattr|escape }}{% endautoescape %}"
-            )
-            assert tmpl.render(foo=False) == " foo=&#34;&amp;lt;test&amp;gt;&#34;"
-            assert tmpl.render(foo=True) == ' foo="&lt;test&gt;"'
+        env = Environment(autoescape=True)
+        tmpl = env.from_string(
+            '{% autoescape foo %}{{ {"foo": "<test>"}'
+            "|xmlattr|escape }}{% endautoescape %}"
+        )
+        assert tmpl.render(foo=False) == " foo=&#34;&amp;lt;test&amp;gt;&#34;"
+        assert tmpl.render(foo=True) == ' foo="&lt;test&gt;"'
 
     def test_scoping(self):
         env = Environment()
