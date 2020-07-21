@@ -584,13 +584,12 @@ class TestAutoEscape:
             assert tmpl.render(foo=True) == ' foo="&lt;test&gt;"'
 
     def test_scoping(self):
-        with pytest.deprecated_call():
-            env = Environment(extensions=["jinja2.ext.autoescape"])
-            tmpl = env.from_string(
-                '{% autoescape true %}{% set x = "<x>" %}{{ x }}'
-                '{% endautoescape %}{{ x }}{{ "<y>" }}'
-            )
-            assert tmpl.render(x=1) == "&lt;x&gt;1<y>"
+        env = Environment()
+        tmpl = env.from_string(
+            '{% autoescape true %}{% set x = "<x>" %}{{ x }}'
+            '{% endautoescape %}{{ x }}{{ "<y>" }}'
+        )
+        assert tmpl.render(x=1) == "&lt;x&gt;1<y>"
 
     def test_volatile_scoping(self):
         with pytest.deprecated_call():
