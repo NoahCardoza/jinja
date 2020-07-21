@@ -162,13 +162,11 @@ class StreamFilterExtension(Extension):
 
 class TestExtensions:
     def test_extend_late(self):
-        with pytest.deprecated_call():
-            env = Environment()
-            env.add_extension("jinja2.ext.autoescape")
-            t = env.from_string(
-                '{% autoescape true %}{{ "<test>" }}{% endautoescape %}'
-            )
-            assert t.render() == "&lt;test&gt;"
+        env = Environment()
+        t = env.from_string(
+            '{% autoescape true %}{{ "<test>" }}{% endautoescape %}'
+        )
+        assert t.render() == "&lt;test&gt;"
 
     def test_loop_controls(self):
         env = Environment(extensions=["jinja2.ext.loopcontrols"])
