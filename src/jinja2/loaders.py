@@ -201,7 +201,7 @@ class FileSystemLoader(BaseLoader):
             for dirpath, _, filenames in walk_dir:
                 for filename in filenames:
                     template = (
-                        os.path.join(dirpath, filename)[len(searchpath) :]
+                        os.path.join(dirpath, filename)[len(searchpath):]
                         .strip(os.path.sep)
                         .replace(os.path.sep, "/")
                     )
@@ -260,6 +260,10 @@ class PackageLoader(BaseLoader):
         # packages work, otherwise get_loader returns None.
         import_module(package_name)
         spec = importlib.util.find_spec(package_name)
+
+        if not spec:
+            raise TemplateNotFound(package_name)
+
         self._loader = loader = spec.loader
         self._archive = None
         self._template_root = None
@@ -303,7 +307,9 @@ class PackageLoader(BaseLoader):
         else:
             # Package is a zip file.
             try:
+                # pytype: disable=attribute-error
                 source = self._loader.get_data(p)
+                # pytype: enable=attribute-error
             except OSError:
                 raise TemplateNotFound(template)
 
@@ -336,7 +342,7 @@ class PackageLoader(BaseLoader):
 
             # Package is a zip file.
             prefix = (
-                self._template_root[len(self._archive) :].lstrip(os.path.sep)
+                self._template_root[len(self._archive):].lstrip(os.path.sep)
                 + os.path.sep
             )
             offset = len(prefix)
