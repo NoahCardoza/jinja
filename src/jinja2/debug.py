@@ -1,10 +1,24 @@
 import platform
 import sys
 from types import CodeType
+from typing import cast
 
 from . import TemplateSyntaxError
 from .utils import internal_code
 from .utils import missing
+
+
+def extract_fake_traceback(exc_value: TemplateSyntaxError, source=None):
+    exc_value.translated = True
+    exc_value.source = source
+    # Remove the old traceback, otherwise the frames from the
+    # compiler still show up.
+    exc_value.with_traceback(None)
+    # Outside of runtime, so the frame isn't executing template
+    # code, but it still needs to point at the template.
+    return fake_traceback(
+        exc_value, None, exc_value.filename or "<unknown>", exc_value.lineno
+    )
 
 
 def rewrite_traceback_stack(source=None):
@@ -20,18 +34,16 @@ def rewrite_traceback_stack(source=None):
     """
     _, exc_value, tb = sys.exc_info()
 
-    if isinstance(exc_value, TemplateSyntaxError) and not exc_value.translated:
-        exc_value.translated = True
-        exc_value.source = source
-        # Remove the old traceback, otherwise the frames from the
-        # compiler still show up.
-        exc_value.with_traceback(None)
-        # Outside of runtime, so the frame isn't executing template
-        # code, but it still needs to point at the template.
-        tb = fake_traceback(
-            exc_value, None, exc_value.filename or "<unknown>", exc_value.lineno
-        )
-    else:
+    # Should never be called without an execption.
+    if exc_value is None:
+        return
+    # For some reason the pytype thought it could still be None on
+    # line 78.
+    exc_value = cast(BaseException, exc_value)
+
+    if isinstance(exc_value, TemplateSyntaxError) and not cast(TemplateSyntaxError, exc_value).translated:
+        tb = extract_fake_traceback(exc_value, source)
+    elif tb is not None:
         # Skip the frame for the render function.
         tb = tb.tb_next
 
@@ -93,7 +105,8 @@ def fake_traceback(exc_value, tb, filename, lineno):
         "__jinja_exception__": exc_value,
     }
     # Raise an exception at the correct line number.
-    code = compile("\n" * (lineno - 1) + "raise __jinja_exception__", filename, "exec")
+    code = compile("\n" * (lineno - 1) +
+                   "raise __jinja_exception__", filename, "exec")
 
     # Build a new code object that points to the template file and
     # replaces the location with a block name.
@@ -154,7 +167,7 @@ def fake_traceback(exc_value, tb, filename, lineno):
     try:
         exec(code, globals, locals)
     except BaseException:
-        return sys.exc_info()[2].tb_next
+        return sys.exc_info()[2].tb_next  # pytype: disable=attribute-error
 
 
 def get_template_locals(real_locals):
