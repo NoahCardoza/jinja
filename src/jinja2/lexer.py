@@ -8,6 +8,7 @@ from ast import literal_eval
 from collections import deque
 from operator import itemgetter
 from sys import intern
+from typing import cast
 
 from ._identifier import pattern as name_re
 from .exceptions import TemplateSyntaxError
@@ -219,7 +220,8 @@ def compile_rules(environment):
             (
                 len(environment.line_comment_prefix),
                 TOKEN_LINECOMMENT_BEGIN,
-                r"(?:^|(?<=\S))[^\S\r\n]*" + e(environment.line_comment_prefix),
+                r"(?:^|(?<=\S))[^\S\r\n]*" +
+                e(environment.line_comment_prefix),
             )
         )
 
@@ -245,7 +247,8 @@ class Token(tuple):
     __slots__ = ()
     lineno, type, value = (property(itemgetter(x)) for x in range(3))
 
-    def __new__(cls, lineno, type, value):
+    @classmethod
+    def factory(cls, lineno, type, value):
         return tuple.__new__(cls, (lineno, intern(str(type)), value))
 
     def __str__(self):
@@ -311,7 +314,7 @@ class TokenStream:
         self.name = name
         self.filename = filename
         self.closed = False
-        self.current = Token(1, TOKEN_INITIAL, "")
+        self.current = Token.factory(1, TOKEN_INITIAL, "")
         next(self)
 
     def __iter__(self):
@@ -372,7 +375,7 @@ class TokenStream:
 
     def close(self):
         """Close the stream."""
-        self.current = Token(self.current.lineno, TOKEN_EOF, "")
+        self.current = Token.factory(self.current.lineno, TOKEN_EOF, "")
         self._iter = None
         self.closed = True
 
@@ -433,7 +436,8 @@ class OptionalLStrip(tuple):
 
     # Even though it looks like a no-op, creating instances fails
     # without this.
-    def __new__(cls, *members, **kwargs):
+    @classmethod
+    def factory(cls, *members, **kwargs):
         return super().__new__(cls, members)
 
 
@@ -480,7 +484,8 @@ class Lexer:
 
         # If lstrip is enabled, it should not be applied if there is any
         # non-whitespace between the newline and block.
-        self.lstrip_unless_re = c(r"[^ \t]") if environment.lstrip_blocks else None
+        self.lstrip_unless_re = c(
+            r"[^ \t]") if environment.lstrip_blocks else None
 
         self.newline_sequence = environment.newline_sequence
         self.keep_trailing_newline = environment.keep_trailing_newline
@@ -490,7 +495,8 @@ class Lexer:
             fr"(?:\-{block_end_re}\s*|{block_end_re}))"
         )
         root_parts_re = "|".join(
-            [root_raw_re] + [fr"(?P<{n}>{r}(\-|\+|))" for n, r in root_tag_rules]
+            [root_raw_re] +
+            [fr"(?P<{n}>{r}(\-|\+|))" for n, r in root_tag_rules]
         )
 
         # global lexing rules
@@ -499,7 +505,7 @@ class Lexer:
                 # directives
                 (
                     c(fr"(.*?)(?:{root_parts_re})"),
-                    OptionalLStrip(TOKEN_DATA, "#bygroup"),
+                    OptionalLStrip.factory(TOKEN_DATA, "#bygroup"),
                     "#bygroup",
                 ),
                 # data
@@ -546,7 +552,7 @@ class Lexer:
                         fr"(?:\+{block_end_re}|\-{block_end_re}\s*"
                         fr"|{block_end_re}{block_suffix_re}))"
                     ),
-                    OptionalLStrip(TOKEN_DATA, TOKEN_RAW_END),
+                    OptionalLStrip.factory(TOKEN_DATA, TOKEN_RAW_END),
                     "#pop",
                 ),
                 (c(r"(.)"), (Failure("Missing end of raw directive"),), None),
@@ -619,7 +625,7 @@ class Lexer:
                 value = literal_eval(value.replace("_", ""))
             elif token == TOKEN_OPERATOR:
                 token = operators[value]
-            yield Token(lineno, token, value)
+            yield Token.factory(lineno, token, value)
 
     def tokeniter(self, source, name, filename=None, state=None):
         """This method tokenizes the text and returns the tokens in a
@@ -674,12 +680,14 @@ class Lexer:
                         # Skipping the text and first type, every other group is the
                         # whitespace control for each type. One of the groups will be
                         # -, +, or empty string instead of None.
-                        strip_sign = next(g for g in groups[2::2] if g is not None)
+                        strip_sign = next(
+                            g for g in groups[2::2] if g is not None)
 
                         if strip_sign == "-":
                             # Strip all whitespace between the text and the tag.
                             stripped = text.rstrip()
-                            newlines_stripped = text[len(stripped) :].count("\n")
+                            newlines_stripped = text[len(
+                                stripped):].count("\n")
                             groups = (stripped,) + groups[1:]
                         elif (
                             # Not marked for preserving whitespace.
@@ -717,7 +725,7 @@ class Lexer:
                                 )
                         # normal group
                         else:
-                            data = groups[idx]
+                            data = cast(str, groups[idx])
                             if data or token not in ignore_if_empty:
                                 yield lineno, token, data
                             lineno += data.count("\n") + newlines_stripped
